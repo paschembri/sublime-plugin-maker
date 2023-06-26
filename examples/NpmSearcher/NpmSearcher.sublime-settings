@@ -1,0 +1,5 @@
+{
+  "npm_searcher": {
+    "api_url": "https://registry.npmjs.com/-/v1/search?text={}&size=20"
+  }
+}

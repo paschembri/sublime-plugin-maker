@@ -1,0 +1,6 @@
+[
+  {
+    "caption": "NpmSearcher: Search NPM",
+    "command": "npm_searcher"
+  }
+]
