@@ -67,8 +67,8 @@ Now, perform the following operations :
 """
 
 OPERATIONS_PROMPT = [
-    '1. Create and write sublime settings in {plugin_name}.sublime-settings',
-    '2. Create and write python code in {plugin_name}.py while meeting all constraints',
+    '1. Create and write python code in {plugin_name}.py while meeting all constraints',
+    '2. Create and write sublime settings in {plugin_name}.sublime-settings',
     '3. Create and write sublime commands file {plugin_name}.sublime-commands',
     '4. Create a {plugin_name}-readme.md file with installation instructions',
 ]

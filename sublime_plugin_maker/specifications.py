@@ -16,8 +16,8 @@ from .constants import (
 def make_spec(plugin_type):
     specs = PLUGIN_TYPE_REQUIREMENTS[plugin_type]
 
-    builtin_requirements = '\n- '.join(specs['builtin-requirements'])
-    prompt = specs['prompt']
+    builtin_requirements = "\n- ".join(specs["builtin-requirements"])
+    prompt = specs["prompt"]
 
     p_template = PromptTemplate(
         template=prompt,
@@ -44,18 +44,18 @@ def make_spec(plugin_type):
 
 @click.command()
 @click.option(
-    '--plugin-name',
-    prompt='Plugin name',
+    "--plugin-name",
+    prompt="Plugin name",
 )
 @click.option(
-    '--plugin-type',
-    prompt='What type of plugin do you want to make ?',
+    "--plugin-type",
+    prompt="What type of plugin do you want to make ?",
     type=click.Choice(SUPPORTED_PLUGIN_TYPES, case_sensitive=False),
 )
 def make(plugin_name, plugin_type):
     llm = ChatOpenAI(
         temperature=0,
-        model="gpt-3.5-turbo-0613",
+        model="gpt-4",
     )
 
     prompt, schema = make_spec(plugin_type)
@@ -69,25 +69,25 @@ def make(plugin_name, plugin_type):
 
     response = spec_chain.run(plugin_name=plugin_name)
 
-    questions = response['arguments']['questions']
+    questions = response["arguments"]["questions"]
     placeholders = [
-        '> type here your answer providing more context or examples'
+        "> type here your answer providing more context or examples"
     ] * len(questions)
 
     spec_text = textwrap.dedent(
-        '\n'.join(
+        "\n".join(
             (
-                '# Overview\n',
+                "# Overview\n",
                 prompt.format(plugin_name=plugin_name),
-                '# Questions - Answers\n',
-                '\n\n'.join(chain(*zip(questions, placeholders))),
+                "# Questions - Answers\n",
+                "\n\n".join(chain(*zip(questions, placeholders))),
             )
         )
     )
 
-    with open(f'./{plugin_name}.spec.md', 'w') as spec_file:
+    with open(f"./{plugin_name}.spec.md", "w") as spec_file:
         spec_file.write(spec_text)
 
-    print(f'Written {plugin_name}.spec.md')
-    print('Answer the questions in the `Questions - Answers`. ')
-    subprocess.run(['open', f'./{plugin_name}.spec.md'], check=True)
+    print(f"Written {plugin_name}.spec.md")
+    print("Answer the questions in the `Questions - Answers`. ")
+    subprocess.run(["open", f"./{plugin_name}.spec.md"], check=True)

@@ -8,6 +8,10 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from .constants import BUILDER_PROMPT, OPERATIONS_PROMPT, CHECKER_PROMPT
 
+import langchain
+
+langchain.debug = True
+
 
 def camel_to_snake_case(string):
     new_string = ""
@@ -24,8 +28,8 @@ class PythonFileTool(WriteFileTool):
     WriteFileTool wrapper for sporadic hallucinations from models
     """
 
-    name: str = 'python'
-    description: str = 'Create and write python code into a file'
+    name: str = "python"
+    description: str = "Persist python code into a file"
 
 
 class SublimeSettingsFileTool(WriteFileTool):
@@ -33,8 +37,8 @@ class SublimeSettingsFileTool(WriteFileTool):
     WriteFileTool wrapper for sporadic hallucinations from models
     """
 
-    name: str = 'sublime_settings'
-    description: str = 'Create and write sublime settings into a file'
+    name: str = "sublime_settings"
+    description: str = "Create and write sublime settings into a file"
 
 
 class SublimeCommandFileTool(WriteFileTool):
@@ -42,8 +46,8 @@ class SublimeCommandFileTool(WriteFileTool):
     WriteFileTool wrapper for sporadic hallucinations from models
     """
 
-    name: str = 'sublime_commands'
-    description: str = 'Create and write sublime commands into a file'
+    name: str = "sublime_commands"
+    description: str = "Create and write sublime commands into a file"
 
 
 class ReadmeFileTool(WriteFileTool):
@@ -51,36 +55,36 @@ class ReadmeFileTool(WriteFileTool):
     WriteFileTool wrapper for sporadic hallucinations from models
     """
 
-    name: str = 'write_readme'
-    description: str = 'Create and write readme into a file'
+    name: str = "write_readme"
+    description: str = "Create and write readme into a file"
 
 
 @click.command()
 @click.option(
-    '--spec-file-path',
-    prompt='Spec file generated with `make-specs`',
+    "--spec-file-path",
+    prompt="Spec file generated with `make-specs`",
 )
 @click.option(
-    '--sublime-packages-path',
-    default='~/Library/Application Support/Sublime Text 3/Packages',
+    "--sublime-packages-path",
+    default="~/Library/Application Support/Sublime Text 3/Packages",
 )
 def make(spec_file_path, sublime_packages_path):
     llm = ChatOpenAI(
         temperature=0,
-        model="gpt-4-0613",
+        model="gpt-4",
     )
 
-    plugin_name = os.path.basename(spec_file_path).replace('.spec.md', '')
+    plugin_name = os.path.basename(spec_file_path).replace(".spec.md", "")
 
-    with open(spec_file_path, 'r') as spec_file:
+    with open(spec_file_path, "r") as spec_file:
         full_context = spec_file.read()
 
     prompt = PromptTemplate(
         template=BUILDER_PROMPT,
         input_variables=[
             "context",
-            'operations',
-            'plugin_name',
+            "operations",
+            "plugin_name",
         ],
     )
 
@@ -100,6 +104,7 @@ def make(spec_file_path, sublime_packages_path):
         tools,
         llm,
         agent=AgentType.OPENAI_FUNCTIONS,
+        verbose=True,
     )
     operations = map(
         lambda op: op.format(plugin_name=plugin_name), OPERATIONS_PROMPT
@@ -113,27 +118,4 @@ def make(spec_file_path, sublime_packages_path):
 
     sublime_maker_agent.run(instructions)
 
-    # Implement code check
-
-    try:
-        with open(
-            os.path.join(working_directory, f'{plugin_name}.py'), 'r'
-        ) as file:
-            code = file.read()
-    except FileNotFoundError:
-        with open(
-            os.path.join(
-                working_directory, f'{camel_to_snake_case(plugin_name)}.py'
-            ),
-            'r',
-        ) as file:
-            code = file.read()
-
-    prompt = PromptTemplate(
-        template=CHECKER_PROMPT,
-        input_variables=["code", "plugin_name"],
-    )
-    instructions = prompt.format(code=code, plugin_name=plugin_name)
-    sublime_maker_agent.run(instructions)
-
-    print('Completed.')
+    print("Completed.")
